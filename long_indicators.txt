@@ -1,0 +1,14 @@
+// ===== Conditions for system
+indicator1 = TenkanSen[9,26,52]
+indicator2 = KijunSen[9,26,52]
+tradeOn = (indicator1 CROSSES OVER indicator2)
+
+// ===== Numbers for system
+p = 0.9 // Strategyprofit to multiply by for lower risk
+x = 10 //Trailing will start @trailingstart points profit
+y = 12 //Trailing step to move the "stoploss"
+toAlotOfMoney = 1.3 // TargetProfit
+sadButTrue = 5
+
+// ===== Return values
+return tradeOn AS "tradeOn", toAlotOfMoney AS "toAlotOfMoney", x AS "x", y AS "y", p AS "p", v AS "v"
