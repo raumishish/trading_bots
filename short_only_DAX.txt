@@ -1,0 +1,51 @@
+DEFPARAM CumulateOrders = False // Cumulating positions deactivated
+tradeOn,toAlotOfMoney,x,y,p,v,sadButTrue = CALL "BerlinShort_1h_incidicator"
+active = v = 1 // Validate date for your algolicens
+maxLoss = 200
+
+// =============================== Calulate positionSize
+bankRoll = 3800 // Total euro that the system starts at (min 1000)
+minContract = 1 // Minimum contract to start at (min: 0.5)
+maxContract = 2 // Maximum contracts that system can run (max: unlimited)
+size = 1 / bankRoll // Create variabel to calculate contracts
+numberOfContracts = bankRoll + STRATEGYPROFIT * 0.9 // lägg in variabel p. Update number of contracts if strategy is profitable.
+IF minContract > numberOfContracts * size THEN
+positionSize = minContract
+ELSIF minContract < numberOfContracts THEN
+positionSize = numberOfContracts * size
+ELSIF numberOfContracts * size > maxContract THEN
+positionSize = maxContract
+ENDIF
+
+// =============================== Buy function
+IF tradeOn AND active  THEN
+SELLSHORT positionSize CONTRACT AT MARKET
+SET STOP pLOSS maxLoss
+ENDIF
+
+// =============================== Trailing stop function - Cred: prorealcode.com
+trailingstart = x
+trailingstep = y
+//Reset the stoploss value
+IF NOT ONMARKET THEN
+newSL=0
+ENDIF
+//manage short positions
+IF SHORTONMARKET THEN
+//first move (breakeven)
+IF newSL=0 AND tradeprice(1)-close>=trailingstart*pipsize THEN
+newSL = tradeprice(1)-trailingstep*pipsize
+ENDIF
+//next moves
+IF newSL>0 AND newSL-close>=trailingstep*pipsize THEN
+newSL = newSL-trailingstep*pipsize
+ENDIF
+ENDIF
+
+// =============================== Sell function
+IF newSL>0 THEN
+EXITSHORT AT newSL STOP
+ENDIF
+SET TARGET %PROFIT toAlotOfMoney
+SET STOP %LOSS sadButTrue
+
